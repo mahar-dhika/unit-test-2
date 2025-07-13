@@ -13,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
+        node-version: [20]
 
     steps:
     # Checkout the repository code
@@ -24,7 +24,7 @@ jobs:
     - name: Setup Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
-        node-version: "20"
+        node-version: ${{ matrix.node-version }}
         cache: 'npm'
 
     # Install dependencies
@@ -39,11 +39,4 @@ jobs:
     - name: Run unit tests
       run: npm test -- --coverage --watchAll=false
 
-    # Upload coverage reports to Codecov (optional)
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage/lcov.info
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
+
