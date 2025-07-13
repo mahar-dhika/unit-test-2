@@ -84,18 +84,24 @@ describe("ProfilePage", () => {
   it("shows validation error for invalid email", async () => {
     render(<ProfilePage />);
     
-    // Only set the email to invalid, leave others empty so we get multiple errors including email
+    // Fill in other required fields to isolate email validation (like the username test does)
+    fireEvent.change(screen.getByLabelText(/Username/i), {
+      target: { value: "validusername" },
+    });
+    fireEvent.change(screen.getByLabelText(/Full Name/i), {
+      target: { value: "Valid User" },
+    });
     fireEvent.change(screen.getByLabelText(/Email/i), {
       target: { value: "invalid-email" },
     });
+    fireEvent.change(screen.getByLabelText(/Phone/i), {
+      target: { value: "1234567890" },
+    });
     fireEvent.click(screen.getByRole("button", { name: /Update/i }));
 
-    // Debug: Log all text on the page
-    await waitFor(() => {
-      const errors = screen.getAllByText(/must/i);
-      console.log('Found error messages:', errors.map(el => el.textContent));
-      expect(screen.getByText(/Must be a valid email format/i)).toBeInTheDocument();
-    });
+    expect(
+      await screen.findByText(/Must be a valid email format/i)
+    ).toBeInTheDocument();
   });
 
   it("shows validation error for invalid phone", async () => {

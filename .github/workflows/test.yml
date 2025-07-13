@@ -6,6 +6,7 @@ on:
     branches: [ main, master, Module-5 ]
   pull_request:
     branches: [ main, master, Module-5 ]
+  workflow_dispatch:
 
 jobs:
   test:
