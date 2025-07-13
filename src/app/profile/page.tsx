@@ -88,7 +88,7 @@ export default function ProfilePage() {
       } else {
         toast.error(data.message || "An error occurred.", { id: toastId });
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("Network error occurred.", { id: toastId });
     }
   };
