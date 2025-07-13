@@ -29,7 +29,7 @@ describe("LoginPage", () => {
     
     expect(screen.getByRole("heading", { name: /login/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByDisplayValue("")).toBeInTheDocument(); // password input by value
+    expect(screen.getByLabelText("Password")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /login/i })).toBeInTheDocument();
   });
 
@@ -46,11 +46,11 @@ describe("LoginPage", () => {
     render(<LoginPage />);
     
     const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByRole("textbox", { name: /password/i }) || document.getElementById("password");
+    const passwordInput = screen.getByLabelText("Password");
     const submitButton = screen.getByRole("button", { name: /login/i });
     
     fireEvent.change(emailInput, { target: { value: "test@example.com" } });
-    fireEvent.change(passwordInput!, { target: { value: "123" } });
+    fireEvent.change(passwordInput, { target: { value: "123" } });
     fireEvent.click(submitButton);
     
     expect(await screen.findByText(/password must be at least 6 characters/i)).toBeInTheDocument();
@@ -59,7 +59,7 @@ describe("LoginPage", () => {
   it("should show validation errors for both empty email and short password", async () => {
     render(<LoginPage />);
     
-    const passwordInput = document.getElementById("password") as HTMLInputElement;
+    const passwordInput = screen.getByLabelText("Password");
     const submitButton = screen.getByRole("button", { name: /login/i });
     
     fireEvent.change(passwordInput, { target: { value: "123" } });
@@ -72,7 +72,7 @@ describe("LoginPage", () => {
   it("should toggle password visibility", () => {
     render(<LoginPage />);
     
-    const passwordInput = document.getElementById("password") as HTMLInputElement;
+    const passwordInput = screen.getByLabelText("Password") as HTMLInputElement;
     const toggleButton = screen.getByRole("button", { name: /show password/i });
     
     expect(passwordInput.type).toBe("password");
@@ -93,7 +93,7 @@ describe("LoginPage", () => {
     render(<LoginPage />);
     
     const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = document.getElementById("password") as HTMLInputElement;
+    const passwordInput = screen.getByLabelText("Password");
     const submitButton = screen.getByRole("button", { name: /login/i });
     
     fireEvent.change(emailInput, { target: { value: "test@example.com" } });
@@ -125,7 +125,7 @@ describe("LoginPage", () => {
     render(<LoginPage />);
     
     const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = document.getElementById("password") as HTMLInputElement;
+    const passwordInput = screen.getByLabelText("Password");
     const submitButton = screen.getByRole("button", { name: /login/i });
     
     fireEvent.change(emailInput, { target: { value: "test@example.com" } });
@@ -148,7 +148,7 @@ describe("LoginPage", () => {
     render(<LoginPage />);
     
     const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = document.getElementById("password") as HTMLInputElement;
+    const passwordInput = screen.getByLabelText("Password");
     const submitButton = screen.getByRole("button", { name: /login/i });
     
     fireEvent.change(emailInput, { target: { value: "wrong@example.com" } });
@@ -171,7 +171,7 @@ describe("LoginPage", () => {
     render(<LoginPage />);
     
     const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = document.getElementById("password") as HTMLInputElement;
+    const passwordInput = screen.getByLabelText("Password");
     const submitButton = screen.getByRole("button", { name: /login/i });
     
     fireEvent.change(emailInput, { target: { value: "test@example.com" } });
@@ -209,7 +209,7 @@ describe("LoginPage", () => {
   it("should update password when user types", () => {
     render(<LoginPage />);
     
-    const passwordInput = document.getElementById("password") as HTMLInputElement;
+    const passwordInput = screen.getByLabelText("Password") as HTMLInputElement;
     
     fireEvent.change(passwordInput, { target: { value: "password123" } });
     
@@ -227,7 +227,7 @@ describe("LoginPage", () => {
     render(<LoginPage />);
     
     const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = document.getElementById("password") as HTMLInputElement;
+    const passwordInput = screen.getByLabelText("Password");
     const submitButton = screen.getByRole("button", { name: /login/i });
     
     fireEvent.change(emailInput, { target: { value: "test@example.com" } });
@@ -241,7 +241,7 @@ describe("LoginPage", () => {
     render(<LoginPage />);
     
     const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = document.getElementById("password") as HTMLInputElement;
+    const passwordInput = screen.getByLabelText("Password");
     const submitButton = screen.getByRole("button", { name: /login/i });
     
     // Enter valid data

@@ -31,20 +31,29 @@ export default function LoginPage() {
 
     const toastId = toast.loading("Logging in...");
 
-    const response = await fetch("/api/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const data = await response.json();
+      if (!response) {
+        toast.error("Network error occurred.", { id: toastId });
+        return;
+      }
 
-    if (response.ok) {
-      toast.success("Login successful!", { id: toastId });
-    } else {
-      toast.error(data.message || "An error occurred.", { id: toastId });
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Login successful!", { id: toastId });
+      } else {
+        toast.error(data.message || "An error occurred.", { id: toastId });
+      }
+    } catch (error) {
+      toast.error("Network error occurred.", { id: toastId });
     }
   };
 

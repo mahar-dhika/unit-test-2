@@ -3,9 +3,10 @@ import { NextResponse } from "next/server";
 
 jest.mock("next/server", () => ({
   NextResponse: {
-    json: jest.fn((data) => ({
-      ...data,
+    json: jest.fn((data, options) => ({
       json: () => Promise.resolve(data),
+      status: options?.status || 200,
+      ok: (options?.status || 200) >= 200 && (options?.status || 200) < 300,
     })),
   },
 }));
@@ -178,12 +179,14 @@ describe("API /api/profile", () => {
   });
 
   it("should return 400 with multiple validation errors", async () => {
+    const futureDate = new Date();
+    futureDate.setFullYear(futureDate.getFullYear() + 1);
     const invalidData = {
       username: "short",
       fullName: "",
       email: "invalid-email",
       phone: "123",
-      birthDate: "2025-01-01",
+      birthDate: futureDate.toISOString().split('T')[0],
       bio: "a".repeat(161),
     };
     const req = {

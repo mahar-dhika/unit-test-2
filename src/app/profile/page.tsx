@@ -30,10 +30,10 @@ export default function ProfilePage() {
     if (!fullName) {
       newErrors.fullName = "Full name is required.";
     }
-    if (!/^\S+@\S+\.\S+$/.test(email)) {
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
       newErrors.email = "Must be a valid email format.";
     }
-    if (!/^\d{10,15}$/.test(phone)) {
+    if (!phone || !/^\d{10,15}$/.test(phone)) {
       newErrors.phone = "Phone must be 10-15 digits.";
     }
     if (birthDate) {
@@ -60,27 +60,36 @@ export default function ProfilePage() {
 
     const toastId = toast.loading("Updating profile...");
 
-    const response = await fetch("/api/profile", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username,
-        fullName,
-        email,
-        phone,
-        birthDate,
-        bio,
-      }),
-    });
+    try {
+      const response = await fetch("/api/profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username,
+          fullName,
+          email,
+          phone,
+          birthDate,
+          bio,
+        }),
+      });
 
-    const data = await response.json();
+      if (!response) {
+        toast.error("Network error occurred.", { id: toastId });
+        return;
+      }
 
-    if (response.ok) {
-      toast.success("Profile updated successfully!", { id: toastId });
-    } else {
-      toast.error(data.message || "An error occurred.", { id: toastId });
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Profile updated successfully!", { id: toastId });
+      } else {
+        toast.error(data.message || "An error occurred.", { id: toastId });
+      }
+    } catch (error) {
+      toast.error("Network error occurred.", { id: toastId });
     }
   };
 

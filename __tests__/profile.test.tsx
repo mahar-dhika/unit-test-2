@@ -18,6 +18,7 @@ global.fetch = jest.fn(() =>
   Promise.resolve({
     json: () => Promise.resolve({ success: true }),
     ok: true,
+    status: 200,
   })
 ) as jest.Mock;
 
@@ -60,8 +61,18 @@ describe("ProfilePage", () => {
   it("shows validation error for short username", async () => {
     render(<ProfilePage />);
     
+    // Fill in other required fields to isolate username validation
     fireEvent.change(screen.getByLabelText(/Username/i), {
       target: { value: "short" },
+    });
+    fireEvent.change(screen.getByLabelText(/Full Name/i), {
+      target: { value: "Valid User" },
+    });
+    fireEvent.change(screen.getByLabelText(/Email/i), {
+      target: { value: "valid@email.com" },
+    });
+    fireEvent.change(screen.getByLabelText(/Phone/i), {
+      target: { value: "1234567890" },
     });
     fireEvent.click(screen.getByRole("button", { name: /Update/i }));
 
@@ -73,19 +84,33 @@ describe("ProfilePage", () => {
   it("shows validation error for invalid email", async () => {
     render(<ProfilePage />);
     
+    // Only set the email to invalid, leave others empty so we get multiple errors including email
     fireEvent.change(screen.getByLabelText(/Email/i), {
       target: { value: "invalid-email" },
     });
     fireEvent.click(screen.getByRole("button", { name: /Update/i }));
 
-    expect(
-      await screen.findByText(/Must be a valid email format/i)
-    ).toBeInTheDocument();
+    // Debug: Log all text on the page
+    await waitFor(() => {
+      const errors = screen.getAllByText(/must/i);
+      console.log('Found error messages:', errors.map(el => el.textContent));
+      expect(screen.getByText(/Must be a valid email format/i)).toBeInTheDocument();
+    });
   });
 
   it("shows validation error for invalid phone", async () => {
     render(<ProfilePage />);
     
+    // Fill in other required fields to isolate phone validation
+    fireEvent.change(screen.getByLabelText(/Username/i), {
+      target: { value: "validuser" },
+    });
+    fireEvent.change(screen.getByLabelText(/Full Name/i), {
+      target: { value: "Valid User" },
+    });
+    fireEvent.change(screen.getByLabelText(/Email/i), {
+      target: { value: "valid@email.com" },
+    });
     fireEvent.change(screen.getByLabelText(/Phone/i), {
       target: { value: "123" },
     });
@@ -102,6 +127,19 @@ describe("ProfilePage", () => {
     const futureDate = new Date();
     futureDate.setFullYear(futureDate.getFullYear() + 1);
     
+    // Fill in other required fields to isolate birth date validation
+    fireEvent.change(screen.getByLabelText(/Username/i), {
+      target: { value: "validuser" },
+    });
+    fireEvent.change(screen.getByLabelText(/Full Name/i), {
+      target: { value: "Valid User" },
+    });
+    fireEvent.change(screen.getByLabelText(/Email/i), {
+      target: { value: "valid@email.com" },
+    });
+    fireEvent.change(screen.getByLabelText(/Phone/i), {
+      target: { value: "1234567890" },
+    });
     fireEvent.change(screen.getByLabelText(/Birth Date/i), {
       target: { value: futureDate.toISOString().split('T')[0] },
     });
@@ -117,6 +155,19 @@ describe("ProfilePage", () => {
     
     const longBio = "a".repeat(161);
     
+    // Fill in other required fields to isolate bio validation
+    fireEvent.change(screen.getByLabelText(/Username/i), {
+      target: { value: "validuser" },
+    });
+    fireEvent.change(screen.getByLabelText(/Full Name/i), {
+      target: { value: "Valid User" },
+    });
+    fireEvent.change(screen.getByLabelText(/Email/i), {
+      target: { value: "valid@email.com" },
+    });
+    fireEvent.change(screen.getByLabelText(/Phone/i), {
+      target: { value: "1234567890" },
+    });
     fireEvent.change(screen.getByLabelText(/Bio/i), {
       target: { value: longBio },
     });
@@ -132,6 +183,7 @@ describe("ProfilePage", () => {
     
     (fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
+      status: 200,
       json: () => Promise.resolve({ success: true }),
     });
 
@@ -171,6 +223,7 @@ describe("ProfilePage", () => {
     
     (fetch as jest.Mock).mockResolvedValueOnce({
       ok: false,
+      status: 400,
       json: () => Promise.resolve({ message: "Validation failed" }),
     });
 
@@ -200,6 +253,7 @@ describe("ProfilePage", () => {
     
     (fetch as jest.Mock).mockResolvedValueOnce({
       ok: false,
+      status: 500,
       json: () => Promise.resolve({}),
     });
 
