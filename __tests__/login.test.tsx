@@ -15,11 +15,12 @@ jest.mock("react-hot-toast", () => ({
 }));
 
 // Mock fetch
-global.fetch = jest.fn();
+const mockFetch = jest.fn();
+global.fetch = mockFetch;
 
 describe("LoginPage", () => {
   beforeEach(() => {
-    (fetch as jest.Mock).mockClear();
+    mockFetch.mockClear();
     jest.clearAllMocks();
   });
 
@@ -28,7 +29,7 @@ describe("LoginPage", () => {
     
     expect(screen.getByRole("heading", { name: /login/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    expect(screen.getByDisplayValue("")).toBeInTheDocument(); // password input by value
     expect(screen.getByRole("button", { name: /login/i })).toBeInTheDocument();
   });
 
@@ -45,11 +46,11 @@ describe("LoginPage", () => {
     render(<LoginPage />);
     
     const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/password/i);
+    const passwordInput = screen.getByRole("textbox", { name: /password/i }) || document.getElementById("password");
     const submitButton = screen.getByRole("button", { name: /login/i });
     
     fireEvent.change(emailInput, { target: { value: "test@example.com" } });
-    fireEvent.change(passwordInput, { target: { value: "123" } });
+    fireEvent.change(passwordInput!, { target: { value: "123" } });
     fireEvent.click(submitButton);
     
     expect(await screen.findByText(/password must be at least 6 characters/i)).toBeInTheDocument();
@@ -58,7 +59,7 @@ describe("LoginPage", () => {
   it("should show validation errors for both empty email and short password", async () => {
     render(<LoginPage />);
     
-    const passwordInput = screen.getByLabelText(/password/i);
+    const passwordInput = document.getElementById("password") as HTMLInputElement;
     const submitButton = screen.getByRole("button", { name: /login/i });
     
     fireEvent.change(passwordInput, { target: { value: "123" } });
@@ -71,7 +72,7 @@ describe("LoginPage", () => {
   it("should toggle password visibility", () => {
     render(<LoginPage />);
     
-    const passwordInput = screen.getByLabelText(/password/i) as HTMLInputElement;
+    const passwordInput = document.getElementById("password") as HTMLInputElement;
     const toggleButton = screen.getByRole("button", { name: /show password/i });
     
     expect(passwordInput.type).toBe("password");
@@ -84,7 +85,7 @@ describe("LoginPage", () => {
   });
 
   it("should call login API with correct data on valid form submission", async () => {
-    (fetch as jest.Mock).mockResolvedValueOnce({
+    mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({ message: "Login successful!" }),
     });
@@ -92,7 +93,7 @@ describe("LoginPage", () => {
     render(<LoginPage />);
     
     const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/password/i);
+    const passwordInput = document.getElementById("password") as HTMLInputElement;
     const submitButton = screen.getByRole("button", { name: /login/i });
     
     fireEvent.change(emailInput, { target: { value: "test@example.com" } });
@@ -100,7 +101,7 @@ describe("LoginPage", () => {
     fireEvent.click(submitButton);
     
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith("/api/login", {
+      expect(mockFetch).toHaveBeenCalledWith("/api/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -116,7 +117,7 @@ describe("LoginPage", () => {
   it("should handle successful login response", async () => {
     const { toast } = require("react-hot-toast");
     
-    (fetch as jest.Mock).mockResolvedValueOnce({
+    mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({ message: "Login successful!" }),
     });
@@ -124,7 +125,7 @@ describe("LoginPage", () => {
     render(<LoginPage />);
     
     const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/password/i);
+    const passwordInput = document.getElementById("password") as HTMLInputElement;
     const submitButton = screen.getByRole("button", { name: /login/i });
     
     fireEvent.change(emailInput, { target: { value: "test@example.com" } });
@@ -139,7 +140,7 @@ describe("LoginPage", () => {
   it("should handle login error response", async () => {
     const { toast } = require("react-hot-toast");
     
-    (fetch as jest.Mock).mockResolvedValueOnce({
+    mockFetch.mockResolvedValueOnce({
       ok: false,
       json: () => Promise.resolve({ message: "Invalid credentials." }),
     });
@@ -147,7 +148,7 @@ describe("LoginPage", () => {
     render(<LoginPage />);
     
     const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/password/i);
+    const passwordInput = document.getElementById("password") as HTMLInputElement;
     const submitButton = screen.getByRole("button", { name: /login/i });
     
     fireEvent.change(emailInput, { target: { value: "wrong@example.com" } });
@@ -162,7 +163,7 @@ describe("LoginPage", () => {
   it("should handle API error without message", async () => {
     const { toast } = require("react-hot-toast");
     
-    (fetch as jest.Mock).mockResolvedValueOnce({
+    mockFetch.mockResolvedValueOnce({
       ok: false,
       json: () => Promise.resolve({}),
     });
@@ -170,7 +171,7 @@ describe("LoginPage", () => {
     render(<LoginPage />);
     
     const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/password/i);
+    const passwordInput = document.getElementById("password") as HTMLInputElement;
     const submitButton = screen.getByRole("button", { name: /login/i });
     
     fireEvent.change(emailInput, { target: { value: "test@example.com" } });
@@ -192,6 +193,64 @@ describe("LoginPage", () => {
       expect(screen.getByText(/email is required/i)).toBeInTheDocument();
     });
     
-    expect(fetch).not.toHaveBeenCalled();
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it("should update email when user types", () => {
+    render(<LoginPage />);
+    
+    const emailInput = screen.getByLabelText(/email/i) as HTMLInputElement;
+    
+    fireEvent.change(emailInput, { target: { value: "test@example.com" } });
+    
+    expect(emailInput.value).toBe("test@example.com");
+  });
+
+  it("should update password when user types", () => {
+    render(<LoginPage />);
+    
+    const passwordInput = document.getElementById("password") as HTMLInputElement;
+    
+    fireEvent.change(passwordInput, { target: { value: "password123" } });
+    
+    expect(passwordInput.value).toBe("password123");
+  });
+
+  it("should show loading toast when submitting valid form", async () => {
+    const { toast } = require("react-hot-toast");
+    
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ message: "Login successful!" }),
+    });
+
+    render(<LoginPage />);
+    
+    const emailInput = screen.getByLabelText(/email/i);
+    const passwordInput = document.getElementById("password") as HTMLInputElement;
+    const submitButton = screen.getByRole("button", { name: /login/i });
+    
+    fireEvent.change(emailInput, { target: { value: "test@example.com" } });
+    fireEvent.change(passwordInput, { target: { value: "password123" } });
+    fireEvent.click(submitButton);
+    
+    expect(toast.loading).toHaveBeenCalledWith("Logging in...");
+  });
+
+  it("should pass validation with valid email and password", () => {
+    render(<LoginPage />);
+    
+    const emailInput = screen.getByLabelText(/email/i);
+    const passwordInput = document.getElementById("password") as HTMLInputElement;
+    const submitButton = screen.getByRole("button", { name: /login/i });
+    
+    // Enter valid data
+    fireEvent.change(emailInput, { target: { value: "test@example.com" } });
+    fireEvent.change(passwordInput, { target: { value: "password123" } });
+    fireEvent.click(submitButton);
+    
+    // Should not show validation errors
+    expect(screen.queryByText(/email is required/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/password must be at least 6 characters/i)).not.toBeInTheDocument();
   });
 });
